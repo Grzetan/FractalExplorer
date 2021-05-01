@@ -32,17 +32,18 @@ public class KochSnowflake extends JPanel{
     }
 
     public void paintSnowflake(Graphics g){
-        image = createImage(WIDTH-120,HEIGHT);
+        image = createImage(WIDTH,HEIGHT);
         graphics = image.getGraphics();
         //Make black bg color
         graphics.setColor(Color.BLACK);
         graphics.fillRect(0,0,image.getWidth(this), image.getHeight(this));
         draw(graphics);
-        g.drawImage(image, 120,0,this);
+        g.drawImage(image, 0,0,this);
     }
 
     public void draw(Graphics g){
         g.setColor(Color.WHITE);
+        kochCurve(100,HEIGHT/2,WIDTH-200, 90,4,g);
     }
 
     public void run(){
@@ -69,13 +70,31 @@ public class KochSnowflake extends JPanel{
         }
     }
 
-    public void segment(int x1,int y1,int x2,int y2, int limit){
-        if(limit <= 0){
+    public void kochCurve(int x,int y,int len, int angle, int limit, Graphics g){
+        if(limit == 0){
+            double inRadians = Math.toRadians(angle);
+            int x2 = (int) (x + len * Math.sin(inRadians));
+            int y2 = (int) (y + len * Math.cos(inRadians));
+            g.drawLine(x,y,x2,y2);
             return;
         }
+        int newLen = len / 3;
 
-
-
+        double inRadians = Math.toRadians(angle);
+        //First segment
+        kochCurve(x,y, newLen, angle, limit-1, g);
+        //Second segment
+        int x2 = (int) (x + newLen * Math.sin(inRadians));
+        int y2 = (int) (y + newLen * Math.cos(inRadians));
+        kochCurve(x2,y2,newLen,angle+60, limit-1,g);
+        //Third segment
+        int x3 = (int) (x2 + newLen * Math.sin(inRadians+Math.toRadians(60)));
+        int y3 = (int) (y2 + newLen * Math.cos(inRadians+Math.toRadians(60)));
+        kochCurve(x3,y3,newLen, angle-60, limit-1,g);
+        //Fourth segment
+        int x4 = (int) (x + newLen*2 * Math.sin(inRadians));
+        int y4 = (int) (y + newLen*2 * Math.cos(inRadians));
+        kochCurve(x4,y4,newLen,angle, limit-1,g);
     }
 
     public void initKeyBindings(){
