@@ -2,10 +2,15 @@ package com.grzetan.fractals.fractals;
 
 import com.grzetan.fractals.FractalFrame;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class KochSnowflake extends JPanel{
     final int WIDTH = 1000;
@@ -15,7 +20,13 @@ public class KochSnowflake extends JPanel{
     Graphics graphics;
     Image image;
 
+    int limit = 4;
+    int followMouse = -1;
+    boolean firstFrame = true;
+
     FractalFrame frame;
+
+    String helpMsg = "HELP\nCTRL+H - Show help\nCTRL+Q - Make snowflake follow your mouse\nCTRL+S - Take screenshot\nESCAPE - go back to menu";
 
     public KochSnowflake(FractalFrame frame){
         this.frame = frame;
@@ -23,6 +34,7 @@ public class KochSnowflake extends JPanel{
         this.setFocusable(true);
         this.setLayout(null);
         this.setBackground(Color.BLACK);
+        this.addMouseMotionListener(new MA());
 
         initKeyBindings();
 
@@ -44,13 +56,13 @@ public class KochSnowflake extends JPanel{
     public void draw(Graphics g){
         g.setColor(Color.WHITE);
         //Bottom side
-        kochCurve(WIDTH-200,HEIGHT-250,WIDTH-400, -90,4,g);
+        kochCurve(WIDTH-200,HEIGHT-200,WIDTH-400, -90,limit,g);
         //Left side
-        kochCurve(200,HEIGHT-250,WIDTH-400, 150,4,g);
+        kochCurve(200,HEIGHT-200,WIDTH-400, 150,limit,g);
         //Right side
         int x = (int) (200 + (WIDTH-400) * Math.sin(Math.toRadians(150)));
-        int y = (int) (HEIGHT-250 + (WIDTH-400) * Math.cos(Math.toRadians(150)));
-        kochCurve(x,y,WIDTH-400, 30,4,g);
+        int y = (int) (HEIGHT-200 + (WIDTH-400) * Math.cos(Math.toRadians(150)));
+        kochCurve(x,y,WIDTH-400, 30,limit,g);
     }
 
     public void run(){
@@ -74,6 +86,28 @@ public class KochSnowflake extends JPanel{
             }catch(Exception e){
                 e.printStackTrace();
             }
+
+            if(firstFrame){
+                firstFrame = false;
+                JOptionPane.showMessageDialog(null, helpMsg);
+            }
+        }
+    }
+
+    public void takeSS(){
+        BufferedImage img = new BufferedImage(this.getWidth(), this.getHeight(), BufferedImage.TYPE_INT_RGB);
+        this.paintSnowflake(img.getGraphics());
+        //Make filename
+        SimpleDateFormat formatter= new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
+        Date date = new Date(System.currentTimeMillis());
+        String path = "Koch_Snowflake-"+formatter.format(date)+".png";
+
+        File outputfile = new File(path);
+        try {
+            ImageIO.write(img, "png", outputfile);
+            JOptionPane.showMessageDialog(null, "Screenshot saved as "+path);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -104,6 +138,12 @@ public class KochSnowflake extends JPanel{
         kochCurve(x4,y4,newLen,angle, limit-1,g);
     }
 
+    public void moveSnowflake(MouseEvent e){
+        int x = e.getX();
+
+        limit = (int) ((x/(double) WIDTH) * 6);
+    }
+
     public void initKeyBindings(){
         //Go back to menu
         Action goBackToMenuAction = new AbstractAction() {
@@ -115,6 +155,45 @@ public class KochSnowflake extends JPanel{
         };
         this.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("ESCAPE"), "MENU");
         this.getActionMap().put("MENU", goBackToMenuAction);
+
+        //Make snowflake follow your mouse
+        Action followMouseAction = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                followMouse *= -1;
+            }
+        };
+        this.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke('Q', InputEvent.CTRL_DOWN_MASK), "FOLLOW");
+        this.getActionMap().put("FOLLOW", followMouseAction);
+
+        //Take SS
+        Action takeSSAction = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                takeSS();
+            }
+        };
+        this.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke('S', InputEvent.CTRL_DOWN_MASK), "SS");
+        this.getActionMap().put("SS", takeSSAction);
+
+        //Help
+        Action helpAction = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                JOptionPane.showMessageDialog(null, helpMsg);
+            }
+        };
+        this.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke('H', InputEvent.CTRL_DOWN_MASK), "HELP");
+        this.getActionMap().put("HELP", helpAction);
+    }
+
+    public class MA extends MouseAdapter{
+        @Override
+        public void mouseMoved(MouseEvent e) {
+            if(followMouse > 0) {
+                moveSnowflake(e);
+            }
+        }
     }
 
 }
