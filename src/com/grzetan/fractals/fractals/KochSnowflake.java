@@ -43,7 +43,14 @@ public class KochSnowflake extends JPanel{
 
     public void draw(Graphics g){
         g.setColor(Color.WHITE);
-        kochCurve(100,HEIGHT/2,WIDTH-200, 90,4,g);
+        //Bottom side
+        kochCurve(WIDTH-200,HEIGHT-250,WIDTH-400, -90,4,g);
+        //Left side
+        kochCurve(200,HEIGHT-250,WIDTH-400, 150,4,g);
+        //Right side
+        int x = (int) (200 + (WIDTH-400) * Math.sin(Math.toRadians(150)));
+        int y = (int) (HEIGHT-250 + (WIDTH-400) * Math.cos(Math.toRadians(150)));
+        kochCurve(x,y,WIDTH-400, 30,4,g);
     }
 
     public void run(){
