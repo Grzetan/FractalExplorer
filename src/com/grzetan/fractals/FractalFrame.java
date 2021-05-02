@@ -5,8 +5,6 @@ import com.grzetan.fractals.fractals.KochSnowflake;
 import com.grzetan.fractals.menu.FractalMenu;
 
 import javax.swing.*;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 
 public class FractalFrame extends JFrame {
     FractalMenu menu;

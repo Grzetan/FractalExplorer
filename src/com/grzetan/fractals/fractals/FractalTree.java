@@ -6,6 +6,7 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -21,6 +22,14 @@ public class FractalTree extends JPanel {
     Thread thread;
     Graphics graphics;
     Image image;
+
+    double zoom = 1;
+    double prevZoom = 1;
+    int mouseX;
+    int mouseY;
+    double xOffset;
+    double yOffset;
+    AffineTransform a;
 
     JMenu menu;
     JMenuBar menuBar;
@@ -42,6 +51,7 @@ public class FractalTree extends JPanel {
         this.setBackground(Color.BLACK);
 
         this.addMouseMotionListener(new MA());
+        this.addMouseWheelListener(new SA());
         initKeyBindings();
 
         //Start game
@@ -50,6 +60,18 @@ public class FractalTree extends JPanel {
     }
 
     public void paintTree(Graphics g){
+        Graphics2D g2 = (Graphics2D) g;
+        a = new AffineTransform();
+
+        double zoomDiv = zoom / prevZoom;
+        xOffset = zoomDiv * xOffset + (1-zoomDiv) * mouseX;
+        yOffset = zoomDiv * yOffset + (1-zoomDiv) * mouseY;
+
+        a.translate(xOffset,yOffset);
+        a.scale(zoom,zoom);
+        prevZoom = zoom;
+        g2.transform(a);
+
         if(randomizeTree == 1){
             randomizeTree++;
         }
@@ -60,7 +82,7 @@ public class FractalTree extends JPanel {
         graphics.setColor(Color.BLACK);
         graphics.fillRect(0,0,image.getWidth(this), image.getHeight(this));
         draw(graphics);
-        g.drawImage(image, 0,0,this);
+        g2.drawImage(image, 0,0,this);
     }
 
     public void moveTree(MouseEvent e){
@@ -214,9 +236,25 @@ public class FractalTree extends JPanel {
     public class MA extends MouseAdapter{
         @Override
         public void mouseMoved(MouseEvent event){
+            mouseX = event.getX();
+            mouseY = event.getY();
             if(followMouse > 0){
                 moveTree(event);
             }
         }
     }
+
+    public class SA implements MouseWheelListener{
+        @Override
+        public void mouseWheelMoved(MouseWheelEvent mouseWheelEvent) {
+            if(mouseWheelEvent.getWheelRotation() < 0 && zoom < 5){
+                zoom *= 1.03;
+            }
+
+            if(mouseWheelEvent.getWheelRotation() > 0 && zoom > 1){
+                zoom /= 1.03;
+            }
+        }
+    }
+
 }

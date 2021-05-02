@@ -57,6 +57,5 @@ public class FractalMenu extends JPanel {
             }
         });
         this.add(snowflakeBtn);
-
     }
 }

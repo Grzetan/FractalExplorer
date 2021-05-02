@@ -6,6 +6,7 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -24,6 +25,14 @@ public class KochSnowflake extends JPanel{
     int followMouse = -1;
     boolean firstFrame = true;
 
+    AffineTransform a;
+    double zoom = 1;
+    double prevZoom = 1;
+    double xOffset = 0;
+    double yOffset = 0;
+    int mouseX;
+    int mouseY;
+
     FractalFrame frame;
 
     String helpMsg = "HELP\nCTRL+H - Show help\nCTRL+Q - Make snowflake follow your mouse\nCTRL+S - Take screenshot\nESCAPE - go back to menu";
@@ -35,6 +44,7 @@ public class KochSnowflake extends JPanel{
         this.setLayout(null);
         this.setBackground(Color.BLACK);
         this.addMouseMotionListener(new MA());
+        this.addMouseWheelListener(new SA());
 
         initKeyBindings();
 
@@ -44,13 +54,25 @@ public class KochSnowflake extends JPanel{
     }
 
     public void paintSnowflake(Graphics g){
+        a = new AffineTransform();
+        Graphics2D g2 = (Graphics2D) g;
+
+        double zoomDiv = zoom / prevZoom;
+        xOffset = zoomDiv * xOffset + (1-zoomDiv) * mouseX;
+        yOffset = zoomDiv * yOffset + (1-zoomDiv) * mouseY;
+
+        a.translate(xOffset,yOffset);
+        a.scale(zoom,zoom);
+        prevZoom = zoom;
+        g2.transform(a);
+
         image = createImage(WIDTH,HEIGHT);
         graphics = image.getGraphics();
         //Make black bg color
         graphics.setColor(Color.BLACK);
         graphics.fillRect(0,0,image.getWidth(this), image.getHeight(this));
         draw(graphics);
-        g.drawImage(image, 0,0,this);
+        g2.drawImage(image, 0,0,this);
     }
 
     public void draw(Graphics g){
@@ -188,8 +210,25 @@ public class KochSnowflake extends JPanel{
     public class MA extends MouseAdapter{
         @Override
         public void mouseMoved(MouseEvent e) {
+            mouseX = e.getX();
+            mouseY = e.getY();
+
             if(followMouse > 0) {
                 moveSnowflake(e);
+            }
+        }
+    }
+
+    public class SA implements MouseWheelListener{
+
+        @Override
+        public void mouseWheelMoved(MouseWheelEvent mouseWheelEvent) {
+            if(mouseWheelEvent.getWheelRotation() < 0 && zoom < 5){
+                zoom *= 1.03;
+            }
+
+            if(mouseWheelEvent.getWheelRotation() > 0 && zoom > 1){
+                zoom /= 1.03;
             }
         }
     }
