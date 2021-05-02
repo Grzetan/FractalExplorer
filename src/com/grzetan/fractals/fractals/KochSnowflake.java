@@ -291,11 +291,11 @@ public class KochSnowflake extends JPanel{
         @Override
         public void mouseWheelMoved(MouseWheelEvent mouseWheelEvent) {
             if(mouseWheelEvent.getWheelRotation() < 0 && zoom < 5){
-                zoom *= 1.03;
+                zoom *= 1.05;
             }
 
             if(mouseWheelEvent.getWheelRotation() > 0 && zoom > 1){
-                zoom /= 1.03;
+                zoom /= 1.05;
             }
         }
     }
