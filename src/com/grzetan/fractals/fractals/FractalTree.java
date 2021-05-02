@@ -67,6 +67,20 @@ public class FractalTree extends JPanel {
         xOffset = zoomDiv * xOffset + (1-zoomDiv) * mouseX;
         yOffset = zoomDiv * yOffset + (1-zoomDiv) * mouseY;
 
+        //Prevents generating starting point of image in frame
+        if(xOffset > 0){
+            xOffset = 0;
+        }
+        if(yOffset > 0){
+            yOffset = 0;
+        }
+        if(xOffset < -zoom*WIDTH+WIDTH){
+            xOffset = -zoom*WIDTH+WIDTH;
+        }
+        if(yOffset < -zoom*HEIGHT+HEIGHT){
+            yOffset = -zoom*HEIGHT+HEIGHT;
+        }
+
         a.translate(xOffset,yOffset);
         a.scale(zoom,zoom);
         prevZoom = zoom;
