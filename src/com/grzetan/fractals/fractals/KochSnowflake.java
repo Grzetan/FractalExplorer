@@ -25,6 +25,7 @@ public class KochSnowflake extends JPanel{
     int followMouse = -1;
     boolean firstFrame = true;
 
+    //Zoom
     AffineTransform a;
     double zoom = 1;
     double prevZoom = 1;
@@ -32,6 +33,11 @@ public class KochSnowflake extends JPanel{
     double yOffset = 0;
     int mouseX;
     int mouseY;
+
+    //Dragging
+    boolean mousePressed = false;
+    double lastPointX;
+    double lastPointY;
 
     FractalFrame frame;
 
@@ -44,6 +50,7 @@ public class KochSnowflake extends JPanel{
         this.setLayout(null);
         this.setBackground(Color.BLACK);
         this.addMouseMotionListener(new MA());
+        this.addMouseListener(new ML());
         this.addMouseWheelListener(new SA());
 
         initKeyBindings();
@@ -60,6 +67,15 @@ public class KochSnowflake extends JPanel{
         double zoomDiv = zoom / prevZoom;
         xOffset = zoomDiv * xOffset + (1-zoomDiv) * mouseX;
         yOffset = zoomDiv * yOffset + (1-zoomDiv) * mouseY;
+
+        if(mousePressed){
+            double draggedX = lastPointX - mouseX;
+            double draggedY = lastPointY - mouseY;
+            xOffset -= draggedX;
+            yOffset -= draggedY;
+            lastPointX = mouseX;
+            lastPointY = mouseY;
+        }
 
         //Prevents generating starting point of image in frame
         if(xOffset > 0){
@@ -221,7 +237,44 @@ public class KochSnowflake extends JPanel{
         this.getActionMap().put("HELP", helpAction);
     }
 
+    public class ML implements MouseListener{
+
+        @Override
+        public void mouseClicked(MouseEvent mouseEvent) {
+
+        }
+
+        @Override
+        public void mousePressed(MouseEvent mouseEvent) {
+            mousePressed = true;
+            lastPointX = mouseEvent.getX();
+            lastPointY = mouseEvent.getY();
+        }
+
+        @Override
+        public void mouseReleased(MouseEvent mouseEvent) {
+            mousePressed = false;
+        }
+
+        @Override
+        public void mouseEntered(MouseEvent mouseEvent) {
+
+        }
+
+        @Override
+        public void mouseExited(MouseEvent mouseEvent) {
+
+        }
+    }
+
     public class MA extends MouseAdapter{
+
+        @Override
+        public void mouseDragged(MouseEvent e) {
+            mouseX = e.getX();
+            mouseY = e.getY();
+        }
+
         @Override
         public void mouseMoved(MouseEvent e) {
             mouseX = e.getX();
