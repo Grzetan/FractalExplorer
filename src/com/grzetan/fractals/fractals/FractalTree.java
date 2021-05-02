@@ -29,7 +29,7 @@ public class FractalTree extends JPanel {
     public int followMouse = -1;
     public int randomizeTree = -1;
 
-    int THETA = 30;
+    double THETA = Math.PI / 6;
     float TRUNK_RADIO = 0.67F;
     int LIMIT = 12;
 
@@ -67,25 +67,24 @@ public class FractalTree extends JPanel {
         int x = e.getX();
         int y = e.getY();
 
-        THETA = (int) ((x/(double)WIDTH) * 180);
+        THETA = ((x/(double)WIDTH) * Math.PI);
         TRUNK_RADIO = (float) ((y/(double)HEIGHT) * (0.9-0.4) + 0.4);
     }
 
-    public void branch(int x,int y, int angle, int len, int limit,Graphics g){
+    public void branch(int x,int y, double angle, int len, int limit,Graphics g){
         if(limit <= 0){
             return;
         }
 
-        double angleInRadians = Math.toRadians(angle);
-        int x2 = (int) (x - len * Math.sin(angleInRadians));
-        int y2 = (int) (y - len * Math.cos(angleInRadians));
+        int x2 = (int) (x - len * Math.sin(angle));
+        int y2 = (int) (y - len * Math.cos(angle));
         g.drawLine(x,y,x2,y2);
 
         if(randomizeTree > 0){
             int numberOfBranches = (int) getRandomNumber(1,5);
             for(int i = 0; i<numberOfBranches; i++){
-                int randTheta = (int) getRandomNumber(-50,50);
-                float randTrunkRadio = getRandomNumber(0.4F,0.9F);
+                double randTheta = getRandomNumber(-Math.PI / 4 ,Math.PI / 4);
+                double randTrunkRadio = getRandomNumber(0.4,0.9);
                 branch(x2,y2,angle+randTheta, (int) (len*randTrunkRadio), limit-1,g);
             }
         }else{
@@ -208,8 +207,8 @@ public class FractalTree extends JPanel {
         this.getActionMap().put("HELP", helpAction);
     }
 
-    public float getRandomNumber(float min, float max) {
-        return (float) ((Math.random() * (max - min)) + min);
+    public double getRandomNumber(double min, double max) {
+        return (double) ((Math.random() * (max - min)) + min);
     }
 
     public class MA extends MouseAdapter{

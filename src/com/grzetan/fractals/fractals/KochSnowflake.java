@@ -56,13 +56,13 @@ public class KochSnowflake extends JPanel{
     public void draw(Graphics g){
         g.setColor(Color.WHITE);
         //Bottom side
-        kochCurve(WIDTH-200,HEIGHT-200,WIDTH-400, -90,limit,g);
+        kochCurve(WIDTH-200,HEIGHT-200,WIDTH-400, -Math.PI / 2,limit,g);
         //Left side
-        kochCurve(200,HEIGHT-200,WIDTH-400, 150,limit,g);
+        kochCurve(200,HEIGHT-200,WIDTH-400, 5*Math.PI / 6,limit,g);
         //Right side
-        int x = (int) (200 + (WIDTH-400) * Math.sin(Math.toRadians(150)));
-        int y = (int) (HEIGHT-200 + (WIDTH-400) * Math.cos(Math.toRadians(150)));
-        kochCurve(x,y,WIDTH-400, 30,limit,g);
+        int x = (int) (200 + (WIDTH-400) * Math.sin(5*Math.PI / 6));
+        int y = (int) (HEIGHT-200 + (WIDTH-400) * Math.cos(5*Math.PI / 6));
+        kochCurve(x,y,WIDTH-400, Math.PI / 6,limit,g);
     }
 
     public void run(){
@@ -111,37 +111,35 @@ public class KochSnowflake extends JPanel{
         }
     }
 
-    public void kochCurve(int x,int y,int len, int angle, int limit, Graphics g){
+    public void kochCurve(int x,int y,int len, double angle, int limit, Graphics g){
         if(limit == 0){
-            double inRadians = Math.toRadians(angle);
-            int x2 = (int) (x + len * Math.sin(inRadians));
-            int y2 = (int) (y + len * Math.cos(inRadians));
+            int x2 = (int) (x + len * Math.sin(angle));
+            int y2 = (int) (y + len * Math.cos(angle));
             g.drawLine(x,y,x2,y2);
             return;
         }
         int newLen = len / 3;
 
-        double inRadians = Math.toRadians(angle);
         //First segment
         kochCurve(x,y, newLen, angle, limit-1, g);
         //Second segment
-        int x2 = (int) (x + newLen * Math.sin(inRadians));
-        int y2 = (int) (y + newLen * Math.cos(inRadians));
-        kochCurve(x2,y2,newLen,angle+60, limit-1,g);
+        int x2 = (int) (x + newLen * Math.sin(angle));
+        int y2 = (int) (y + newLen * Math.cos(angle));
+        kochCurve(x2,y2,newLen,angle+Math.PI / 3, limit-1,g);
         //Third segment
-        int x3 = (int) (x2 + newLen * Math.sin(inRadians+Math.toRadians(60)));
-        int y3 = (int) (y2 + newLen * Math.cos(inRadians+Math.toRadians(60)));
-        kochCurve(x3,y3,newLen, angle-60, limit-1,g);
+        int x3 = (int) (x2 + newLen * Math.sin(angle+Math.PI / 3));
+        int y3 = (int) (y2 + newLen * Math.cos(angle+Math.PI / 3));
+        kochCurve(x3,y3,newLen, angle-Math.PI / 3, limit-1,g);
         //Fourth segment
-        int x4 = (int) (x + newLen*2 * Math.sin(inRadians));
-        int y4 = (int) (y + newLen*2 * Math.cos(inRadians));
+        int x4 = (int) (x + newLen*2 * Math.sin(angle));
+        int y4 = (int) (y + newLen*2 * Math.cos(angle));
         kochCurve(x4,y4,newLen,angle, limit-1,g);
     }
 
     public void moveSnowflake(MouseEvent e){
         int x = e.getX();
 
-        limit = (int) ((x/(double) WIDTH) * 6);
+        limit = (int) ((x/(double) WIDTH) * 7);
     }
 
     public void initKeyBindings(){
