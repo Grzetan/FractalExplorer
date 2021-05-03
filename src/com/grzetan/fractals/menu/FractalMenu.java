@@ -57,5 +57,19 @@ public class FractalMenu extends JPanel {
             }
         });
         this.add(snowflakeBtn);
+
+        //mandelbrot set link
+        JButton mandelbrotBtn = new JButton("Mandelbrot set");
+        mandelbrotBtn.setBounds(50,
+                200,
+                (int) mandelbrotBtn.getPreferredSize().getWidth(),
+                (int) mandelbrotBtn.getPreferredSize().getHeight());
+        mandelbrotBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                frame.change("mandelbrot set");
+            }
+        });
+        this.add(mandelbrotBtn);
     }
 }

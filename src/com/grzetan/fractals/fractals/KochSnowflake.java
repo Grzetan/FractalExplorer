@@ -123,7 +123,7 @@ public class KochSnowflake extends JPanel{
         long wait;
 
         final int TARGET_FPS = 30;
-        final long OPTIMAL_TIME = 1000000000 / TARGET_FPS;
+        final long OPTIMAL_TIME = 1_000_000_000 / TARGET_FPS;
 
         while (true){
             now = System.nanoTime();
@@ -132,7 +132,7 @@ public class KochSnowflake extends JPanel{
 
             updateTime = now - System.nanoTime();
 
-            wait = (OPTIMAL_TIME - updateTime) / 1000000;
+            wait = (OPTIMAL_TIME - updateTime) / 1_000_000;
             try{
                 thread.sleep(wait);
             }catch(Exception e){
