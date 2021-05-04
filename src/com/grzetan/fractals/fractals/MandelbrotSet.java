@@ -19,9 +19,14 @@ public class MandelbrotSet extends JPanel {
     final int HEIGHT = 800;
 
     FractalFrame frame;
-    Image image;
+    BufferedImage image;
     Thread thread;
-    Graphics graphics;
+
+    double xmin = -2.5;
+    double xmax = 2;
+    double ymin = -2;
+    double ymax = 2;
+    int maxIterations = 50;
 
     double mouseX;
     double mouseY;
@@ -82,24 +87,80 @@ public class MandelbrotSet extends JPanel {
         a.scale(zoom,zoom);
         g2.transform(a);
 
-        image = createImage(WIDTH,HEIGHT);
-        graphics = image.getGraphics();
-        graphics.setColor(Color.BLACK);
-        graphics.fillRect(0,0,WIDTH,HEIGHT);
-        draw(graphics);
+        image = new BufferedImage(WIDTH,HEIGHT,BufferedImage.TYPE_INT_RGB);
+        mandelbrot(image);
         g2.drawImage(image,0,0,this);
     }
 
-    public void draw(Graphics g){
-        g.setColor(Color.WHITE);
-        g.fillRect(100,100,800,600);
+    private static int makeRGBColor(int red, int green, int blue)
+    {
+        int rgb = 0;
+        rgb = red*65536 + green*256 + blue;
+        return rgb;
+    }
+
+    public void mandelbrot(BufferedImage img){
+        for(int y=0;y<HEIGHT;y++){
+            for(int x=0;x<WIDTH;x++){
+                /*
+                Formula
+                    a = real component (x axis)
+                    b = imaginary component (y axis)
+                    i = sqrt(-1)
+                    c = a + bi
+                    z starts as 0 and increment as long as z < maxIterations
+                    With each iteration z becomes z from previous iteration
+
+                    First iteration:
+                    z=0
+                    F(0) = 0^2 + c
+                    Second iteration:
+                    z = c
+                    F(c) = c^2 + c
+                    Third iteration:
+                    z = c^2 + c
+                    F(c^2+c) = (c^2+c)^2 + c
+                    So we need to know if z^2 goes to infinity with each iteration
+                    or rather stays relatively close to some number (doesn't grow).
+                    z^2 = (a + bi) * (a + bi) =
+                    a^2 + abi + abi + bi^2 =
+                    (i is a square root of -1 so if we square it we get -1)
+                    a^2 + 2abi - b^2 = a^2 - b^2 + 2abi
+                    Each iteration we need to calculate a^-b^2 and 2ab
+                */
+                double originalA = x/(double) WIDTH * Math.abs(xmax - xmin) + xmin;
+                double originalB = y/(double) HEIGHT * Math.abs(ymax - ymin) + ymin;
+                double a = originalA;
+                double b = originalB;
+                double i = 0;
+
+                while(i<maxIterations){
+                    //Calculate z^2
+                    double realComponent = a*a - b*b;
+                    double imaginaryComponent = 2*a*b;
+                    a = realComponent + originalA;
+                    b = imaginaryComponent + originalB;
+                    //If z is too high (goes to infinity), break out
+                    if(a+b > 5){
+                        break;
+                    }
+                    i++;
+                }
+
+                int brightness = (int) (i/(double) maxIterations * 255);
+                if(i == maxIterations){
+                    brightness = 0;
+                }
+                img.setRGB(x,y,makeRGBColor(brightness,brightness,brightness));
+            }
+        }
     }
 
     public void run(){
         long now;
         long waitTime;
         long refreshTime;
-        final int TARGET_FPS = 30;
+        final int TARGET_FPS = 20;
         final long OPTIMAL_TIME = 1_000_000_000 / TARGET_FPS;
 
         while(true){
@@ -198,6 +259,10 @@ public class MandelbrotSet extends JPanel {
         public void mouseMoved(MouseEvent e) {
             mouseX = e.getX();
             mouseY = e.getY();
+            double x = e.getX();
+            double y = e.getY();
+            double a = x/(double) WIDTH * Math.abs(xmax - xmin) + xmin;
+            double b = y/(double) HEIGHT * Math.abs(Math.abs(ymax) - Math.abs(ymin)) + ymin;
         }
     }
 
