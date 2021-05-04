@@ -26,18 +26,11 @@ public class MandelbrotSet extends JPanel {
     double xmax = 2;
     double ymin = -2;
     double ymax = 2;
-    int maxIterations = 50;
+    int maxIterations = 80;
 
     double mouseX;
     double mouseY;
-
-    AffineTransform a;
-    double zoom = 1;
-    double prevZoom = 1;
-    double xOffset = 0;
-    double yOffset = 0;
-    double lastPointX = 0;
-    double lastPointY = 0;
+    int followMouse = -1;
     boolean mousePressed = false;
 
     public MandelbrotSet(FractalFrame frame){
@@ -57,39 +50,9 @@ public class MandelbrotSet extends JPanel {
     }
 
     public void paintSet(Graphics g){
-        Graphics2D g2 = (Graphics2D) g;
-        a = new AffineTransform();
-
-        double zoomDiv = zoom / prevZoom;
-        xOffset = zoomDiv * xOffset + (1-zoomDiv) * mouseX;
-        yOffset = zoomDiv * yOffset + (1-zoomDiv) * mouseY;
-
-        if(mousePressed){
-            xOffset += mouseX - lastPointX;
-            yOffset += mouseY - lastPointY;
-            lastPointX = mouseX;
-            lastPointY = mouseY;
-        }
-
-        if(xOffset > 0){
-            xOffset = 0;
-        }else if(xOffset < -(zoom*WIDTH - WIDTH)){
-            xOffset = -(zoom*WIDTH - WIDTH);
-        }
-        if(yOffset > 0){
-            yOffset = 0;
-        }else if(yOffset < -(zoom*HEIGHT-HEIGHT)){
-            yOffset = -(zoom*HEIGHT-HEIGHT);
-        }
-
-        prevZoom = zoom;
-        a.translate(xOffset,yOffset);
-        a.scale(zoom,zoom);
-        g2.transform(a);
-
         image = new BufferedImage(WIDTH,HEIGHT,BufferedImage.TYPE_INT_RGB);
         mandelbrot(image);
-        g2.drawImage(image,0,0,this);
+        g.drawImage(image,0,0,this);
     }
 
     private static int makeRGBColor(int red, int green, int blue)
@@ -147,7 +110,8 @@ public class MandelbrotSet extends JPanel {
                     i++;
                 }
 
-                int brightness = (int) (i/(double) maxIterations * 255);
+                double brightness2 = (i/maxIterations);
+                int brightness = (int) (Math.sqrt(brightness2) / (double) 1 * 255);
                 if(i == maxIterations){
                     brightness = 0;
                 }
@@ -216,6 +180,16 @@ public class MandelbrotSet extends JPanel {
         };
         this.getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke('S', InputEvent.CTRL_DOWN_MASK), "TAKE_SS");
         this.getActionMap().put("TAKE_SS", takeSS);
+
+        //follow mouse
+        AbstractAction followMouseAction = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                followMouse *= -1;
+            }
+        };
+        this.getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke('Q', InputEvent.CTRL_DOWN_MASK),"FOLLOW_MOUSE");
+        this.getActionMap().put("FOLLOW_MOUSE", followMouseAction);
     }
 
     public class ML implements MouseListener{
@@ -228,8 +202,6 @@ public class MandelbrotSet extends JPanel {
         @Override
         public void mousePressed(MouseEvent mouseEvent) {
             mousePressed = true;
-            lastPointX = mouseEvent.getX();
-            lastPointY = mouseEvent.getY();
         }
 
         @Override
@@ -259,10 +231,9 @@ public class MandelbrotSet extends JPanel {
         public void mouseMoved(MouseEvent e) {
             mouseX = e.getX();
             mouseY = e.getY();
-            double x = e.getX();
-            double y = e.getY();
-            double a = x/(double) WIDTH * Math.abs(xmax - xmin) + xmin;
-            double b = y/(double) HEIGHT * Math.abs(Math.abs(ymax) - Math.abs(ymin)) + ymin;
+            if(followMouse > 0){
+                maxIterations = (int) (mouseX / WIDTH *  100 + 2);
+            }
         }
     }
 
@@ -270,11 +241,10 @@ public class MandelbrotSet extends JPanel {
 
         @Override
         public void mouseWheelMoved(MouseWheelEvent mouseWheelEvent) {
-            if(mouseWheelEvent.getWheelRotation() < 0 && zoom < 5){
-                zoom *= 1.05;
+            if(mouseWheelEvent.getWheelRotation() < 0){
+
             }
-            if(mouseWheelEvent.getWheelRotation() > 0 && zoom > 1){
-                zoom /= 1.05;
+            if(mouseWheelEvent.getWheelRotation() > 0){
             }
         }
     }
