@@ -110,18 +110,19 @@ public class MandelbrotSet extends JPanel {
                     a = realComponent + originalA;
                     b = imaginaryComponent + originalB;
                     //If z is too high (goes to infinity), break out
-                    if(a+b > 5){
+                    if(a*a+b*b > 5){
                         break;
                     }
                     i++;
                 }
 
-                double brightness2 = (i/maxIterations);
-                int brightness = (int) (Math.sqrt(brightness2) / (double) 1 * 255);
                 if(i == maxIterations){
-                    brightness = 0;
+                    img.setRGB(x,y,makeRGBColor(0,0,0));
+                }else if(i > 1){
+                    img.setRGB(x,y,makeRGBColor((int) (150 + 200 - Math.pow(i/50,0.5) * 200 % 255),80,100));
+                }else{
+                    img.setRGB(x,y,makeRGBColor(50,50,50));
                 }
-                img.setRGB(x,y,makeRGBColor(brightness,brightness,brightness));
             }
         }
     }
@@ -247,7 +248,7 @@ public class MandelbrotSet extends JPanel {
             mouseX = e.getX();
             mouseY = e.getY();
             if(followMouse > 0){
-                maxIterations = (int) (mouseX / WIDTH *  100 + 2);
+                maxIterations = (int) (mouseX / WIDTH *  200 + 2);
             }
         }
     }
