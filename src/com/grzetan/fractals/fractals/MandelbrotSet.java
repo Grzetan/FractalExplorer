@@ -22,16 +22,21 @@ public class MandelbrotSet extends JPanel {
     BufferedImage image;
     Thread thread;
 
-    double xmin = -2.5;
+    double xmin = -2;
     double xmax = 2;
     double ymin = -2;
     double ymax = 2;
-    int maxIterations = 80;
+    int maxIterations = 50;
+
+    boolean firstFrame = true;
 
     double mouseX;
     double mouseY;
     int followMouse = -1;
-    boolean mousePressed = false;
+    double lastPointX;
+    double lastPointY;
+
+    String helpMsg = "HELP\nCTRL+H - Show help\nCTRL+Q - Change quality by moving your mouse\nCTRL+S - Take screenshot\nESCAPE - go back to menu";
 
     public MandelbrotSet(FractalFrame frame){
         this.frame = frame;
@@ -52,6 +57,7 @@ public class MandelbrotSet extends JPanel {
     public void paintSet(Graphics g){
         image = new BufferedImage(WIDTH,HEIGHT,BufferedImage.TYPE_INT_RGB);
         mandelbrot(image);
+        Graphics g2 = image.getGraphics();
         g.drawImage(image,0,0,this);
     }
 
@@ -124,7 +130,7 @@ public class MandelbrotSet extends JPanel {
         long now;
         long waitTime;
         long refreshTime;
-        final int TARGET_FPS = 20;
+        final int TARGET_FPS = 30;
         final long OPTIMAL_TIME = 1_000_000_000 / TARGET_FPS;
 
         while(true){
@@ -138,6 +144,10 @@ public class MandelbrotSet extends JPanel {
                 thread.sleep(waitTime);
             } catch (InterruptedException e) {
                 e.printStackTrace();
+            }
+            if(firstFrame){
+                firstFrame = false;
+                JOptionPane.showMessageDialog(null, helpMsg);
             }
         }
     }
@@ -190,33 +200,37 @@ public class MandelbrotSet extends JPanel {
         };
         this.getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke('Q', InputEvent.CTRL_DOWN_MASK),"FOLLOW_MOUSE");
         this.getActionMap().put("FOLLOW_MOUSE", followMouseAction);
+
+        //Help
+        Action helpAction = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                JOptionPane.showMessageDialog(null, helpMsg);
+            }
+        };
+        this.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke('H', InputEvent.CTRL_DOWN_MASK), "HELP");
+        this.getActionMap().put("HELP", helpAction);
     }
 
-    public class ML implements MouseListener{
+    public void dragging(){
+        double diffX = lastPointX - mouseX;
+        double diffY = lastPointY - mouseY;
+        double radioX = diffX / WIDTH;
+        double radioY = diffY / HEIGHT;
+        double radioOnPlane = Math.abs(xmax-xmin);
+        xmin += radioOnPlane*radioX;
+        xmax += radioOnPlane*radioX;
+        ymin += radioOnPlane*radioY;
+        ymax += radioOnPlane*radioY;
+        lastPointX = mouseX;
+        lastPointY = mouseY;
+    }
 
+    public class ML extends MouseAdapter{
         @Override
-        public void mouseClicked(MouseEvent mouseEvent) {
-
-        }
-
-        @Override
-        public void mousePressed(MouseEvent mouseEvent) {
-            mousePressed = true;
-        }
-
-        @Override
-        public void mouseReleased(MouseEvent mouseEvent) {
-            mousePressed = false;
-        }
-
-        @Override
-        public void mouseEntered(MouseEvent mouseEvent) {
-
-        }
-
-        @Override
-        public void mouseExited(MouseEvent mouseEvent) {
-
+        public void mousePressed(MouseEvent e) {
+            lastPointX = e.getX();
+            lastPointY = e.getY();
         }
     }
 
@@ -225,6 +239,7 @@ public class MandelbrotSet extends JPanel {
         public void mouseDragged(MouseEvent e) {
             mouseX = e.getX();
             mouseY = e.getY();
+            dragging();
         }
 
         @Override
@@ -238,13 +253,26 @@ public class MandelbrotSet extends JPanel {
     }
 
     public class SA implements MouseWheelListener{
-
         @Override
         public void mouseWheelMoved(MouseWheelEvent mouseWheelEvent) {
+            //Zoom in
+            double scale = Math.abs(xmax-xmin) * 0.1;
+            double msx = mouseX / (double) WIDTH;
+            double msy = mouseY / (double) HEIGHT;
             if(mouseWheelEvent.getWheelRotation() < 0){
-
+              xmin += scale * msx;
+              xmax -= scale * (1-msx);
+              ymin += scale * msy;
+              ymax -= scale * (1-msy);
             }
+            //Zoom out
             if(mouseWheelEvent.getWheelRotation() > 0){
+                if(Math.abs((xmax+scale*msx)-(xmin-scale*(1-msx))) < 4){
+                    xmin -= scale * (1-msx);
+                    xmax += scale * msx;
+                    ymin -= scale * (1-msy);
+                    ymax += scale * msy;
+                }
             }
         }
     }
