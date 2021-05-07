@@ -24,9 +24,8 @@ public class JuliaSet extends JPanel{
     double xmax = 2;
     double ymin = -2;
     double ymax = 2;
-    int maxIterations = 80;
-    double[] c = {1,1};
-
+    int maxIterations = 90;
+    double[] c = {randomNumber(-0.5,0.5),randomNumber(-0.5,0.5)};
     boolean firstFrame = true;
 
     double mouseX;
@@ -35,7 +34,7 @@ public class JuliaSet extends JPanel{
     double lastPointX;
     double lastPointY;
 
-    String helpMsg = "HELP\nCTRL+H - Show help\nCTRL+Q - Make set follow your mouse\nCTRL+S - Take screenshot\nESCAPE - go back to menu";
+    String helpMsg = "HELP\nCTRL+H - Show help\nCTRL+Q - Make set follow your mouse\nCTRL+R - Randomize set\nCTRL+S - Take screenshot\nESCAPE - go back to menu";
 
     public JuliaSet(FractalFrame frame){
         this.frame = frame;
@@ -46,7 +45,6 @@ public class JuliaSet extends JPanel{
         this.addMouseWheelListener(new JuliaSet.SA());
         this.addMouseMotionListener(new JuliaSet.MA());
         this.addMouseListener(new JuliaSet.ML());
-
         this.initKeyBinding();
 
         thread = new Thread(this::run);
@@ -143,6 +141,10 @@ public class JuliaSet extends JPanel{
         }
     }
 
+    public double randomNumber(double min, double max){
+        return Math.random() * Math.abs(max-min) + min;
+    }
+
     public void takeSS(){
         BufferedImage img = new BufferedImage(this.getWidth(), this.getHeight(), BufferedImage.TYPE_INT_RGB);
         this.paintSet(img.getGraphics());
@@ -191,6 +193,16 @@ public class JuliaSet extends JPanel{
         };
         this.getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke('Q', InputEvent.CTRL_DOWN_MASK),"FOLLOW_MOUSE");
         this.getActionMap().put("FOLLOW_MOUSE", followMouseAction);
+
+        //randomize
+        AbstractAction randomizeAction = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                c = new double[] {randomNumber(-0.5,0.5), randomNumber(-0.5,0.5)};
+            }
+        };
+        this.getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke('R', InputEvent.CTRL_DOWN_MASK),"RANDOMIZE");
+        this.getActionMap().put("RANDOMIZE", randomizeAction);
 
         //Help
         Action helpAction = new AbstractAction() {
