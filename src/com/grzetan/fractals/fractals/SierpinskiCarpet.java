@@ -2,10 +2,16 @@ package com.grzetan.fractals.fractals;
 
 import com.grzetan.fractals.FractalFrame;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.AffineTransform;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class SierpinskiCarpet extends JPanel {
 
@@ -30,7 +36,9 @@ public class SierpinskiCarpet extends JPanel {
     int mouseX;
     int mouseY;
     boolean mousePressed = false;
+    boolean firstFrame = true;
 
+    String helpMsg = "HELP\nCTRL+H - Show help\nCTRL+Q - Make carpet follow your mouse\nCTRL+S - Take screenshot\nESCAPE - go back to menu";
 
     public SierpinskiCarpet(FractalFrame frame){
         this.frame = frame;
@@ -64,7 +72,6 @@ public class SierpinskiCarpet extends JPanel {
         carpet(oneThird,x,y+oneThird*2,limit-1,g);
         carpet(oneThird,x+oneThird,y+oneThird*2,limit-1,g);
         carpet(oneThird,x+oneThird*2,y+oneThird*2,limit-1,g);
-
     }
 
     public void draw(Graphics g){
@@ -128,6 +135,28 @@ public class SierpinskiCarpet extends JPanel {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+
+            if(firstFrame){
+                JOptionPane.showMessageDialog(null, helpMsg);
+                firstFrame = false;
+            }
+        }
+    }
+
+    public void takeSS(){
+        BufferedImage img = new BufferedImage(this.getWidth(), this.getHeight(), BufferedImage.TYPE_INT_RGB);
+        this.paint(img.getGraphics());
+        //Make filename
+        SimpleDateFormat formatter= new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
+        Date date = new Date(System.currentTimeMillis());
+        String path = "Sierpinski_carpet-"+formatter.format(date)+".png";
+
+        File outputfile = new File(path);
+        try {
+            ImageIO.write(img, "png", outputfile);
+            JOptionPane.showMessageDialog(null, "Screenshot saved as "+path);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -153,6 +182,26 @@ public class SierpinskiCarpet extends JPanel {
         };
         this.getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke('Q', InputEvent.CTRL_DOWN_MASK), "FOLLOW MOUSE");
         this.getActionMap().put("FOLLOW MOUSE", a1);
+
+        //Take SS
+        Action takeSSAction = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                takeSS();
+            }
+        };
+        this.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke('S', InputEvent.CTRL_DOWN_MASK), "SS");
+        this.getActionMap().put("SS", takeSSAction);
+
+        //Help
+        Action helpAction = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                JOptionPane.showMessageDialog(null, helpMsg);
+            }
+        };
+        this.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke('H', InputEvent.CTRL_DOWN_MASK), "HELP");
+        this.getActionMap().put("HELP", helpAction);
     }
 
     public class ML extends MouseAdapter{
