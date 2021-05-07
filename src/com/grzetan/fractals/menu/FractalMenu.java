@@ -71,5 +71,19 @@ public class FractalMenu extends JPanel {
             }
         });
         this.add(mandelbrotBtn);
+
+        //julia set link
+        JButton juliaSetLink = new JButton("Julia set");
+        juliaSetLink.setBounds(50,
+                300,
+                (int) juliaSetLink.getPreferredSize().getWidth(),
+                (int) juliaSetLink.getPreferredSize().getHeight());
+        juliaSetLink.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                frame.change("julia set");
+            }
+        });
+        this.add(juliaSetLink);
     }
 }

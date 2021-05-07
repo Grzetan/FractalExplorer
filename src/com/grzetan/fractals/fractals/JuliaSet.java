@@ -6,15 +6,13 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class MandelbrotSet extends JPanel {
-
+public class JuliaSet extends JPanel{
     final int WIDTH = 1000;
     final int HEIGHT = 800;
 
@@ -27,6 +25,7 @@ public class MandelbrotSet extends JPanel {
     double ymin = -2;
     double ymax = 2;
     int maxIterations = 80;
+    double[] c = {1,1};
 
     boolean firstFrame = true;
 
@@ -36,17 +35,17 @@ public class MandelbrotSet extends JPanel {
     double lastPointX;
     double lastPointY;
 
-    String helpMsg = "HELP\nCTRL+H - Show help\nCTRL+Q - Change quality by moving your mouse\nCTRL+S - Take screenshot\nESCAPE - go back to menu";
+    String helpMsg = "HELP\nCTRL+H - Show help\nCTRL+Q - Make set follow your mouse\nCTRL+S - Take screenshot\nESCAPE - go back to menu";
 
-    public MandelbrotSet(FractalFrame frame){
+    public JuliaSet(FractalFrame frame){
         this.frame = frame;
         this.setPreferredSize(new Dimension(WIDTH,HEIGHT));
         this.setFocusable(true);
         this.setBackground(Color.BLACK);
 
-        this.addMouseWheelListener(new SA());
-        this.addMouseMotionListener(new MA());
-        this.addMouseListener(new ML());
+        this.addMouseWheelListener(new JuliaSet.SA());
+        this.addMouseMotionListener(new JuliaSet.MA());
+        this.addMouseListener(new JuliaSet.ML());
 
         this.initKeyBinding();
 
@@ -56,12 +55,12 @@ public class MandelbrotSet extends JPanel {
 
     public void paintSet(Graphics g){
         image = new BufferedImage(WIDTH,HEIGHT,BufferedImage.TYPE_INT_RGB);
-        mandelbrot(image);
+        julia(image);
         Graphics g2 = image.getGraphics();
         g.drawImage(image,0,0,this);
     }
 
-    public void mandelbrot(BufferedImage img){
+    public void julia(BufferedImage img){
         for(int y=0;y<HEIGHT;y++){
             for(int x=0;x<WIDTH;x++){
                 /*
@@ -91,12 +90,12 @@ public class MandelbrotSet extends JPanel {
                 */
                 double originalA = x/(double) WIDTH * Math.abs(xmax - xmin) + xmin;
                 double originalB = y/(double) HEIGHT * Math.abs(ymax - ymin) + ymin;
-                double [] z = {0,0};
+                double [] z = {originalA,originalB};
                 double i = 0;
 
                 while(i<maxIterations){
                     //Calculate z^2
-                    z = new double[]{z[0]*z[0] - z[1]*z[1] + originalA, 2*z[0]*z[1] + originalB};
+                    z = new double[]{z[0]*z[0] - z[1]*z[1] + c[0], 2*z[0]*z[1] + c[1]};
                     //If z is too high (goes to infinity), break out
                     if(z[0]*z[0] + z[1]*z[1] > 5){
                         break;
@@ -150,7 +149,7 @@ public class MandelbrotSet extends JPanel {
         //Make filename
         SimpleDateFormat formatter= new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
         Date date = new Date(System.currentTimeMillis());
-        String path = "Mandelbrot_set-"+formatter.format(date)+".png";
+        String path = "julia_set-"+formatter.format(date)+".png";
 
         File outputfile = new File(path);
         try {
@@ -218,7 +217,7 @@ public class MandelbrotSet extends JPanel {
         lastPointY = mouseY;
     }
 
-    public class ML extends MouseAdapter{
+    public class ML extends MouseAdapter {
         @Override
         public void mousePressed(MouseEvent e) {
             lastPointX = e.getX();
@@ -239,12 +238,14 @@ public class MandelbrotSet extends JPanel {
             mouseX = e.getX();
             mouseY = e.getY();
             if(followMouse > 0){
-                maxIterations = (int) (mouseX / WIDTH *  200 + 2);
+                double originalA = mouseX/(double) WIDTH * Math.abs(xmax - xmin) + xmin;
+                double originalB = mouseY/(double) HEIGHT * Math.abs(ymax - ymin) + ymin;
+                c = new double[] {originalA,originalB};
             }
         }
     }
 
-    public class SA implements MouseWheelListener{
+    public class SA implements MouseWheelListener {
         @Override
         public void mouseWheelMoved(MouseWheelEvent mouseWheelEvent) {
             //Zoom in
