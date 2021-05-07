@@ -85,5 +85,19 @@ public class FractalMenu extends JPanel {
             }
         });
         this.add(juliaSetLink);
+
+        //sierpinski carpet
+        JButton carpet = new JButton("Sierpinski carpet");
+        carpet.setBounds(50,
+                400,
+                (int) carpet.getPreferredSize().getWidth(),
+                (int) carpet.getPreferredSize().getHeight());
+        carpet.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                frame.change("carpet");
+            }
+        });
+        this.add(carpet);
     }
 }

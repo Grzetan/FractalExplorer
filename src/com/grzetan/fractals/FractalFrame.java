@@ -1,9 +1,6 @@
 package com.grzetan.fractals;
 
-import com.grzetan.fractals.fractals.FractalTree;
-import com.grzetan.fractals.fractals.JuliaSet;
-import com.grzetan.fractals.fractals.KochSnowflake;
-import com.grzetan.fractals.fractals.MandelbrotSet;
+import com.grzetan.fractals.fractals.*;
 import com.grzetan.fractals.menu.FractalMenu;
 
 import javax.swing.*;
@@ -14,6 +11,7 @@ public class FractalFrame extends JFrame {
     KochSnowflake snowflake;
     MandelbrotSet mandelbrot;
     JuliaSet julia;
+    SierpinskiCarpet carpet;
 
     FractalFrame(){
         menu = new FractalMenu(this);
@@ -50,6 +48,10 @@ public class FractalFrame extends JFrame {
             case "julia set":
                 julia = new JuliaSet(this);
                 this.getContentPane().add(julia);
+                break;
+            case "carpet":
+                carpet = new SierpinskiCarpet(this);
+                this.getContentPane().add(carpet);
                 break;
         }
         this.getContentPane().revalidate();
