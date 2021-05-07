@@ -26,7 +26,7 @@ public class MandelbrotSet extends JPanel {
     double xmax = 2;
     double ymin = -2;
     double ymax = 2;
-    int maxIterations = 50;
+    int maxIterations = 80;
 
     boolean firstFrame = true;
 
@@ -79,7 +79,6 @@ public class MandelbrotSet extends JPanel {
                     c = a + bi
                     z starts as 0 and increment as long as z < maxIterations
                     With each iteration z becomes z from previous iteration
-
                     First iteration:
                     z=0
                     F(0) = 0^2 + c
@@ -261,10 +260,10 @@ public class MandelbrotSet extends JPanel {
             double msx = mouseX / (double) WIDTH;
             double msy = mouseY / (double) HEIGHT;
             if(mouseWheelEvent.getWheelRotation() < 0){
-              xmin += scale * msx;
-              xmax -= scale * (1-msx);
-              ymin += scale * msy;
-              ymax -= scale * (1-msy);
+                xmin += scale * msx;
+                xmax -= scale * (1-msx);
+                ymin += scale * msy;
+                ymax -= scale * (1-msy);
             }
             //Zoom out
             if(mouseWheelEvent.getWheelRotation() > 0){
