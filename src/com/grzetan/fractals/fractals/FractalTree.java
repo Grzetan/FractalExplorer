@@ -1,11 +1,12 @@
 package com.grzetan.fractals.fractals;
 
 import com.grzetan.fractals.FractalFrame;
+import com.grzetan.fractals.jzoom.JZoom;
+
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -19,22 +20,8 @@ public class FractalTree extends JPanel {
 
     FractalFrame frame;
     Thread thread;
-    Graphics graphics;
-    Image image;
 
-    //Zoom
-    double zoom = 1;
-    double prevZoom = 1;
-    int mouseX;
-    int mouseY;
-    double xOffset;
-    double yOffset;
-    AffineTransform a;
-
-    //Dragging
-    boolean mousePressed = false;
-    double lastPointX;
-    double lastPointY;
+    JZoom jzoom = new JZoom(WIDTH,HEIGHT);
 
     public int followMouse = -1;
     public int randomizeTree = -1;
@@ -52,8 +39,8 @@ public class FractalTree extends JPanel {
         this.setBackground(Color.BLACK);
 
         this.addMouseMotionListener(new MA());
-        this.addMouseListener(new ML());
-        this.addMouseWheelListener(new SA());
+        jzoom.installMouseAdapter(this);
+        jzoom.setBackground(Color.BLACK);
         initKeyBindings();
 
         //Start game
@@ -62,52 +49,12 @@ public class FractalTree extends JPanel {
     }
 
     public void paintTree(Graphics g){
-        Graphics2D g2 = (Graphics2D) g;
-        a = new AffineTransform();
-
-        double zoomDiv = zoom / prevZoom;
-        xOffset = zoomDiv * xOffset + (1-zoomDiv) * mouseX;
-        yOffset = zoomDiv * yOffset + (1-zoomDiv) * mouseY;
-
-        if(mousePressed){
-            double draggedX = lastPointX - mouseX;
-            double draggedY = lastPointY - mouseY;
-            xOffset -= draggedX;
-            yOffset -= draggedY;
-            lastPointX = mouseX;
-            lastPointY = mouseY;
-        }
-
-        //Prevents generating starting point of image in frame
-        if(xOffset > 0){
-            xOffset = 0;
-        }
-        if(yOffset > 0){
-            yOffset = 0;
-        }
-        if(xOffset < -zoom*WIDTH+WIDTH){
-            xOffset = -zoom*WIDTH+WIDTH;
-        }
-        if(yOffset < -zoom*HEIGHT+HEIGHT){
-            yOffset = -zoom*HEIGHT+HEIGHT;
-        }
-
-        a.translate(xOffset,yOffset);
-        a.scale(zoom,zoom);
-        prevZoom = zoom;
-        g2.transform(a);
-
         if(randomizeTree == 1){
             randomizeTree++;
         }
 
-        image = createImage(WIDTH,HEIGHT);
-        graphics = image.getGraphics();
-        //Make black bg color
-        graphics.setColor(Color.BLACK);
-        graphics.fillRect(0,0,image.getWidth(this), image.getHeight(this));
-        draw(graphics);
-        g2.drawImage(image, 0,0,this);
+        draw();
+        jzoom.render(g,0,0,this);
     }
 
     public void moveTree(MouseEvent e){
@@ -118,31 +65,30 @@ public class FractalTree extends JPanel {
         TRUNK_RADIO = (float) ((y/(double)HEIGHT) * (0.9-0.4) + 0.4);
     }
 
-    public void branch(int x,int y, double angle, int len, int limit,Graphics g){
+    public void branch(int x,int y, double angle, int len, int limit){
         if(limit <= 0){
             return;
         }
 
         int x2 = (int) (x - len * Math.sin(angle));
         int y2 = (int) (y - len * Math.cos(angle));
-        g.drawLine(x,y,x2,y2);
+        jzoom.drawLine(x,y,x2,y2,Color.WHITE);
 
         if(randomizeTree > 0){
             int numberOfBranches = (int) getRandomNumber(1,5);
             for(int i = 0; i<numberOfBranches; i++){
                 double randTheta = getRandomNumber(-Math.PI / 4 ,Math.PI / 4);
                 double randTrunkRadio = getRandomNumber(0.4,0.9);
-                branch(x2,y2,angle+randTheta, (int) (len*randTrunkRadio), limit-1,g);
+                branch(x2,y2,angle+randTheta, (int) (len*randTrunkRadio), limit-1);
             }
         }else{
-            branch(x2,y2,angle+THETA, (int) (len*TRUNK_RADIO), limit-1,g);
-            branch(x2,y2,angle-THETA, (int) (len*TRUNK_RADIO), limit-1,g);
+            branch(x2,y2,angle+THETA, (int) (len*TRUNK_RADIO), limit-1);
+            branch(x2,y2,angle-THETA, (int) (len*TRUNK_RADIO), limit-1);
         }
     }
 
-    public void draw(Graphics g){
-        g.setColor(Color.WHITE);
-        branch(WIDTH/2,HEIGHT, 0,200,LIMIT,g);
+    public void draw(){
+        branch(WIDTH/2,HEIGHT, 0,200,LIMIT);
     }
 
     public void run(){
@@ -258,63 +204,12 @@ public class FractalTree extends JPanel {
         return (double) ((Math.random() * (max - min)) + min);
     }
 
-    public class ML implements MouseListener{
-        @Override
-        public void mouseClicked(MouseEvent mouseEvent) {
-
-        }
-
-        @Override
-        public void mousePressed(MouseEvent mouseEvent) {
-            mousePressed = true;
-            lastPointX = mouseEvent.getX();
-            lastPointY = mouseEvent.getY();
-        }
-
-        @Override
-        public void mouseReleased(MouseEvent e) {
-            mousePressed = false;
-        }
-
-        @Override
-        public void mouseEntered(MouseEvent mouseEvent) {
-
-        }
-
-        @Override
-        public void mouseExited(MouseEvent mouseEvent) {
-
-        }
-    }
-
     public class MA extends MouseAdapter {
-
-        @Override
-        public void mouseDragged(MouseEvent e) {
-            mouseX = e.getX();
-            mouseY = e.getY();
-        }
-
         @Override
         public void mouseMoved(MouseEvent event){
-            mouseX = event.getX();
-            mouseY = event.getY();
             if(followMouse > 0){
                 moveTree(event);
             }
         }
     }
-
-    public class SA implements MouseWheelListener{
-        @Override
-        public void mouseWheelMoved(MouseWheelEvent mouseWheelEvent) {
-            if(mouseWheelEvent.getWheelRotation() < 0 && zoom < 5){
-                zoom *= 1.05;
-            }
-            if(mouseWheelEvent.getWheelRotation() > 0 && zoom > 1){
-                zoom /= 1.05;
-            }
-        }
-    }
-
 }

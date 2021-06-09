@@ -1,12 +1,12 @@
 package com.grzetan.fractals.fractals;
 
 import com.grzetan.fractals.FractalFrame;
+import com.grzetan.fractals.jzoom.JZoom;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -18,26 +18,12 @@ public class KochSnowflake extends JPanel{
     final int HEIGHT = 800;
 
     Thread thread;
-    Graphics graphics;
-    Image image;
+
+    JZoom jZoom = new JZoom(WIDTH,HEIGHT);
 
     int limit = 4;
     int followMouse = -1;
     boolean firstFrame = true;
-
-    //Zoom
-    AffineTransform a;
-    double zoom = 1;
-    double prevZoom = 1;
-    double xOffset = 0;
-    double yOffset = 0;
-    int mouseX;
-    int mouseY;
-
-    //Dragging
-    boolean mousePressed = false;
-    double lastPointX;
-    double lastPointY;
 
     FractalFrame frame;
 
@@ -50,9 +36,8 @@ public class KochSnowflake extends JPanel{
         this.setLayout(null);
         this.setBackground(Color.BLACK);
         this.addMouseMotionListener(new MA());
-        this.addMouseListener(new ML());
-        this.addMouseWheelListener(new SA());
-
+        jZoom.installMouseAdapter(this);
+        jZoom.setBackground(Color.BLACK);
         initKeyBindings();
 
         //Start game
@@ -61,67 +46,25 @@ public class KochSnowflake extends JPanel{
     }
 
     public void paintSnowflake(Graphics g){
-        a = new AffineTransform();
-        Graphics2D g2 = (Graphics2D) g;
-
-        double zoomDiv = zoom / prevZoom;
-        xOffset = zoomDiv * xOffset + (1-zoomDiv) * mouseX;
-        yOffset = zoomDiv * yOffset + (1-zoomDiv) * mouseY;
-
-        if(mousePressed){
-            double draggedX = lastPointX - mouseX;
-            double draggedY = lastPointY - mouseY;
-            xOffset -= draggedX;
-            yOffset -= draggedY;
-            lastPointX = mouseX;
-            lastPointY = mouseY;
-        }
-
-        //Prevents generating starting point of image in frame
-        if(xOffset > 0){
-            xOffset = 0;
-        }
-        if(yOffset > 0){
-            yOffset = 0;
-        }
-        if(xOffset < -zoom*WIDTH+WIDTH){
-            xOffset = -zoom*WIDTH+WIDTH;
-        }
-        if(yOffset < -zoom*HEIGHT+HEIGHT){
-            yOffset = -zoom*HEIGHT+HEIGHT;
-        }
-
-        a.translate(xOffset,yOffset);
-        a.scale(zoom,zoom);
-        prevZoom = zoom;
-        g2.transform(a);
-
-        image = createImage(WIDTH,HEIGHT);
-        graphics = image.getGraphics();
-        //Make black bg color
-        graphics.setColor(Color.BLACK);
-        graphics.fillRect(0,0,image.getWidth(this), image.getHeight(this));
-        draw(graphics);
-        g2.drawImage(image, 0,0,this);
+        draw();
+        jZoom.render(g,0,0,this);
     }
 
-    public void draw(Graphics g){
-        g.setColor(Color.WHITE);
+    public void draw(){
         //Bottom side
-        kochCurve(WIDTH-200,HEIGHT-200,WIDTH-400, -Math.PI / 2,limit,g);
+        kochCurve(WIDTH-200,HEIGHT-200,WIDTH-400, -Math.PI / 2,limit);
         //Left side
-        kochCurve(200,HEIGHT-200,WIDTH-400, 5*Math.PI / 6,limit,g);
+        kochCurve(200,HEIGHT-200,WIDTH-400, 5*Math.PI / 6,limit);
         //Right side
         int x = (int) (200 + (WIDTH-400) * Math.sin(5*Math.PI / 6));
         int y = (int) (HEIGHT-200 + (WIDTH-400) * Math.cos(5*Math.PI / 6));
-        kochCurve(x,y,WIDTH-400, Math.PI / 6,limit,g);
+        kochCurve(x,y,WIDTH-400, Math.PI / 6,limit);
     }
 
     public void run(){
         long now;
         long updateTime;
         long wait;
-
         final int TARGET_FPS = 30;
         final long OPTIMAL_TIME = 1_000_000_000 / TARGET_FPS;
 
@@ -163,29 +106,29 @@ public class KochSnowflake extends JPanel{
         }
     }
 
-    public void kochCurve(int x,int y,int len, double angle, int limit, Graphics g){
+    public void kochCurve(int x,int y,int len, double angle, int limit){
         if(limit == 0){
             int x2 = (int) (x + len * Math.sin(angle));
             int y2 = (int) (y + len * Math.cos(angle));
-            g.drawLine(x,y,x2,y2);
+            jZoom.drawLine(x,y,x2,y2,Color.WHITE);
             return;
         }
         int newLen = len / 3;
 
         //First segment
-        kochCurve(x,y, newLen, angle, limit-1, g);
+        kochCurve(x,y, newLen, angle, limit-1);
         //Second segment
         int x2 = (int) (x + newLen * Math.sin(angle));
         int y2 = (int) (y + newLen * Math.cos(angle));
-        kochCurve(x2,y2,newLen,angle+Math.PI / 3, limit-1,g);
+        kochCurve(x2,y2,newLen,angle+Math.PI / 3, limit-1);
         //Third segment
         int x3 = (int) (x2 + newLen * Math.sin(angle+Math.PI / 3));
         int y3 = (int) (y2 + newLen * Math.cos(angle+Math.PI / 3));
-        kochCurve(x3,y3,newLen, angle-Math.PI / 3, limit-1,g);
+        kochCurve(x3,y3,newLen, angle-Math.PI / 3, limit-1);
         //Fourth segment
         int x4 = (int) (x + newLen*2 * Math.sin(angle));
         int y4 = (int) (y + newLen*2 * Math.cos(angle));
-        kochCurve(x4,y4,newLen,angle, limit-1,g);
+        kochCurve(x4,y4,newLen,angle, limit-1);
     }
 
     public void moveSnowflake(MouseEvent e){
@@ -237,67 +180,13 @@ public class KochSnowflake extends JPanel{
         this.getActionMap().put("HELP", helpAction);
     }
 
-    public class ML implements MouseListener{
-
-        @Override
-        public void mouseClicked(MouseEvent mouseEvent) {
-
-        }
-
-        @Override
-        public void mousePressed(MouseEvent mouseEvent) {
-            mousePressed = true;
-            lastPointX = mouseEvent.getX();
-            lastPointY = mouseEvent.getY();
-        }
-
-        @Override
-        public void mouseReleased(MouseEvent mouseEvent) {
-            mousePressed = false;
-        }
-
-        @Override
-        public void mouseEntered(MouseEvent mouseEvent) {
-
-        }
-
-        @Override
-        public void mouseExited(MouseEvent mouseEvent) {
-
-        }
-    }
-
     public class MA extends MouseAdapter{
-
-        @Override
-        public void mouseDragged(MouseEvent e) {
-            mouseX = e.getX();
-            mouseY = e.getY();
-        }
-
         @Override
         public void mouseMoved(MouseEvent e) {
-            mouseX = e.getX();
-            mouseY = e.getY();
 
             if(followMouse > 0) {
                 moveSnowflake(e);
             }
         }
     }
-
-    public class SA implements MouseWheelListener{
-
-        @Override
-        public void mouseWheelMoved(MouseWheelEvent mouseWheelEvent) {
-            if(mouseWheelEvent.getWheelRotation() < 0 && zoom < 5){
-                zoom *= 1.05;
-            }
-
-            if(mouseWheelEvent.getWheelRotation() > 0 && zoom > 1){
-                zoom /= 1.05;
-            }
-        }
-    }
-
 }

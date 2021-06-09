@@ -4,11 +4,8 @@ import com.grzetan.fractals.FractalFrame;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.net.MalformedURLException;
-import java.net.URL;
 
 public class FractalMenu extends JPanel {
 
