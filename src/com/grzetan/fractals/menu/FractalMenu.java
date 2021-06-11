@@ -96,5 +96,19 @@ public class FractalMenu extends JPanel {
             }
         });
         this.add(carpet);
+
+        //benice equation
+        JButton benice = new JButton("Benice equation");
+        benice.setBounds(50,
+                500,
+                (int) benice.getPreferredSize().getWidth(),
+                (int) benice.getPreferredSize().getHeight());
+        benice.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                frame.change("benice");
+            }
+        });
+        this.add(benice);
     }
 }

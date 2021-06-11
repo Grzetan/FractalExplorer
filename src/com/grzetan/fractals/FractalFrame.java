@@ -12,6 +12,7 @@ public class FractalFrame extends JFrame {
     MandelbrotSet mandelbrot;
     JuliaSet julia;
     SierpinskiCarpet carpet;
+    BeniceEquation benice;
 
     FractalFrame(){
         menu = new FractalMenu(this);
@@ -52,6 +53,10 @@ public class FractalFrame extends JFrame {
             case "carpet":
                 carpet = new SierpinskiCarpet(this);
                 this.getContentPane().add(carpet);
+                break;
+            case "benice":
+                benice = new BeniceEquation(this);
+                this.getContentPane().add(benice);
                 break;
         }
         this.getContentPane().revalidate();
