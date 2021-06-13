@@ -30,7 +30,13 @@ public class BeniceEquation extends JPanel{
 
     boolean firstFrame = true;
 
-    String helpMsg = "HELP\nCTRL+H - Show help\nCTRL+S - Take screenshot\nESCAPE - go back to menu";
+    String helpMsg = "HELP\nCTRL+H - Show help\nCTRL+S - Take screenshot\nCTRL+F - Follow last circle\nCTRL+R - Randomize\nESCAPE - go back to menu";
+
+    boolean followLastCircle = false;
+    int inside = 1;
+    double shrinkRatio = 3;
+    int numOfCircles = 10;
+    double k = -4;
 
     public BeniceEquation(FractalFrame frame){
         this.frame = frame;
@@ -40,6 +46,8 @@ public class BeniceEquation extends JPanel{
 
         jZoom.installMouseAdapter(this);
         jZoom.setBackground(Color.BLACK);
+        jZoom.allowDragging(false);
+        jZoom.allowZooming(false);
         initKeyBindings();
         initCircles();
 
@@ -48,14 +56,13 @@ public class BeniceEquation extends JPanel{
     }
 
     public void initCircles(){
-        int numOfCircles = 4;
         Circle[] circs = new Circle[numOfCircles];
-        Circle c1 = new Circle(100, null, null);
+        Circle c1 = new Circle(150, null,0);
         circs[0] = c1;
 
         for(int i=1;i<numOfCircles;i++){
-            double newR = circs[i-1].r / 2;
-            Circle c = new Circle(newR, getRandomNumber(-0.2,0.2), circs[i-1]);
+            double newR = circs[i-1].r / shrinkRatio;
+            Circle c = new Circle(newR, circs[i-1],i);
             circs[i-1].setChild(c);
             circs[i] = c;
         }
@@ -79,7 +86,11 @@ public class BeniceEquation extends JPanel{
         for(Circle circle : circles){
             circle.move();
         }
-        path.add(circles[circles.length - 1].getCurrentPos());
+        double[] pos = circles[circles.length - 1].getCurrentPos();
+        path.add(pos);
+        if(followLastCircle){
+            jZoom.followPoint(pos[0], pos[1], 2);
+        }
     }
 
     public void paint(Graphics g){
@@ -158,6 +169,40 @@ public class BeniceEquation extends JPanel{
         this.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke('S', InputEvent.CTRL_DOWN_MASK), "SS");
         this.getActionMap().put("SS", takeSSAction);
 
+        //Follow last circle
+        Action followAction = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                if(followLastCircle){
+                    followLastCircle = false;
+                    jZoom.allowDragging(true);
+                    jZoom.allowZooming(true);
+                }else{
+                    followLastCircle = true;
+                    jZoom.allowDragging(false);
+                    jZoom.allowZooming(false);
+                }
+            }
+        };
+        this.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke('F', InputEvent.CTRL_DOWN_MASK), "FOLLOW");
+        this.getActionMap().put("FOLLOW", followAction);
+
+        //Randomize
+        Action randomize = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                k = (int) getRandomNumber(-6,0);
+                numOfCircles = (int) getRandomNumber(3,20);
+                inside = (getRandomNumber(0,1) > 0.5) ? 1 : -1;
+                shrinkRatio = (int) getRandomNumber(2,6);
+                path = new ArrayList<>();
+                circles = new Circle[]{};
+                initCircles();
+            }
+        };
+        this.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke('R', InputEvent.CTRL_DOWN_MASK), "RANDOMIZE");
+        this.getActionMap().put("RANDOMIZE", randomize);
+
         //Help
         Action helpAction = new AbstractAction() {
             @Override
@@ -178,10 +223,10 @@ public class BeniceEquation extends JPanel{
         Double speed;
         double angle = 0;
 
-        public Circle(double r, Double speed, Circle parent) {
+        public Circle(double r, Circle parent, int level) {
             this.r = r;
             this.parent = parent;
-            this.speed = speed;
+            this.speed = Math.toRadians(Math.pow(k,level-1));
             if(parent == null){
                 this.x = WIDTH/2;
                 this.y = HEIGHT/2;
@@ -195,9 +240,10 @@ public class BeniceEquation extends JPanel{
         }
 
         public void draw(){
+            System.out.println(inside);
             if(parent != null){
-                x = parent.x + (parent.r + r) * Math.sin(angle);
-                y = parent.y + (parent.r + r) * Math.cos(angle);
+                x = parent.x + (parent.r + inside*r) * Math.sin(angle);
+                y = parent.y + (parent.r + inside*r) * Math.cos(angle);
             }
             jZoom.drawOval(x-r,y-r,r*2,r*2,Color.WHITE);
         }

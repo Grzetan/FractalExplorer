@@ -19,6 +19,8 @@ public class JZoom {
     public float ZOOM_STRENGTH = 0.05F;
     private Point positionInFrame = new Point(0,0);
     private Color background = Color.BLACK;
+    private boolean zoomingDisabled = false;
+    private boolean draggingDisabled = false;
 
     public JZoom(int width, int height){
         this.WIDTH = width;
@@ -101,8 +103,17 @@ public class JZoom {
         return scaledImage;
     }
 
-    public void setBackground(Color color){
-        background = color;
+    public void followPoint(double x, double y, double zoom2){
+        //Set passed zoom
+        zoom = zoom2;
+        double scaleX = WIDTH / zoom;
+        double scaleY = HEIGHT / zoom;
+
+        bounds[0] = x - scaleX/2;
+        bounds[1] = x + scaleX/2;
+        bounds[2] = y - scaleY/2;
+        bounds[3] = y + scaleY/2;
+        correctBounds();
     }
 
     public Image generateImage(){
@@ -174,6 +185,14 @@ public class JZoom {
         correctBounds();
     }
 
+    public void allowZooming(boolean x){
+        zoomingDisabled = !x;
+    }
+
+    public void allowDragging(boolean x){
+        draggingDisabled = !x;
+    }
+
     public void installMouseAdapter(JPanel panel){
         MA ma = new MA();
         panel.addMouseMotionListener(ma);
@@ -187,6 +206,14 @@ public class JZoom {
 
     public void setZOOM_STRENGTH(float ZOOM_STRENGTH) {
         this.ZOOM_STRENGTH = ZOOM_STRENGTH;
+    }
+
+    public void setBackground(Color color){
+        background = color;
+    }
+
+    public double getZoom() {
+        return zoom;
     }
 
     class MA extends MouseAdapter{
@@ -209,7 +236,7 @@ public class JZoom {
 
         @Override
         public void mouseWheelMoved(MouseWheelEvent e) {
-            if(mousePos == null){
+            if(mousePos == null || zoomingDisabled){
                 return;
             }
 
@@ -227,6 +254,10 @@ public class JZoom {
 
         @Override
         public void mouseDragged(MouseEvent e) {
+            if(draggingDisabled){
+                return;
+            }
+
             mousePos = getMousePos(e.getPoint());
             if(mousePos == null){
                 lastPoint = null;
