@@ -240,7 +240,6 @@ public class BeniceEquation extends JPanel{
         }
 
         public void draw(){
-            System.out.println(inside);
             if(parent != null){
                 x = parent.x + (parent.r + inside*r) * Math.sin(angle);
                 y = parent.y + (parent.r + inside*r) * Math.cos(angle);
