@@ -9,7 +9,7 @@ import java.awt.event.ActionListener;
 
 public class FractalMenu extends JPanel {
 
-    final static int WIDTH = 1920;
+    final static int WIDTH = 1000;
     final static int HEIGHT = 1080;
 
     public FractalMenu(FractalFrame frame){

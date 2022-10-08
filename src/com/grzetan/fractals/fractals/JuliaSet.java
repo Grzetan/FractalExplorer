@@ -26,6 +26,8 @@ public class JuliaSet extends JPanel{
     double ymax = 2;
     int maxIterations = 90;
     double[] c = {randomNumber(-0.5,0.5),randomNumber(-0.5,0.5)};
+
+    double epsilon = 0.005;
     boolean firstFrame = true;
 
     double mouseX;
@@ -205,6 +207,46 @@ public class JuliaSet extends JPanel{
         };
         this.getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke('R', InputEvent.CTRL_DOWN_MASK),"RANDOMIZE");
         this.getActionMap().put("RANDOMIZE", randomizeAction);
+
+        //add to cX
+        Action addtoXAction = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                c[0] += epsilon;
+            }
+        };
+        this.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("UP"), "ADD_TO_X");
+        this.getActionMap().put("ADD_TO_X", addtoXAction);
+
+        //subtract from cX
+        Action subtractFromXAction = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                c[0] -= epsilon;
+            }
+        };
+        this.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("DOWN"), "SUBTRACT_FROM_X");
+        this.getActionMap().put("SUBTRACT_FROM_X", subtractFromXAction);
+
+        //add to cY
+        Action addtoYAction = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                c[1] += epsilon;
+            }
+        };
+        this.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("LEFT"), "ADD_TO_Y");
+        this.getActionMap().put("ADD_TO_Y", addtoYAction);
+
+        //subtract from cX
+        Action subtractFromYAction = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                c[1] -= epsilon;
+            }
+        };
+        this.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("RIGHT"), "SUBTRACT_FROM_Y");
+        this.getActionMap().put("SUBTRACT_FROM_Y", subtractFromYAction);
 
         //Help
         Action helpAction = new AbstractAction() {
