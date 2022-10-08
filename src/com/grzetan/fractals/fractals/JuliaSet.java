@@ -13,8 +13,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class JuliaSet extends JPanel{
-    final int WIDTH = 1000;
-    final int HEIGHT = 800;
+    final int WIDTH = 1920;
+    final int HEIGHT = 1080;
 
     FractalFrame frame;
     BufferedImage image;
@@ -105,7 +105,7 @@ public class JuliaSet extends JPanel{
                     Color c = new Color(0,0,0);
                     img.setRGB(x,y,c.getRGB());
                 }else if(i > 1){
-                    Color c = new Color((int) (i/maxIterations*255), 80 ,100);
+                    Color c = new Color((int) (i/maxIterations*255), (int) (i/maxIterations*255) ,(int) (i/maxIterations*255));
                     img.setRGB(x,y,c.getRGB());
                 }else{
                     Color c = new Color(50,50,50);
@@ -126,6 +126,8 @@ public class JuliaSet extends JPanel{
             now = System.nanoTime();
 
             paintSet(this.getGraphics());
+
+            System.out.println(this.c[0] + ", " + this.c[1]);
 
             refreshTime = now - System.nanoTime();
             waitTime = (OPTIMAL_TIME - refreshTime) / 1_000_000;
