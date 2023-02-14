@@ -9,8 +9,8 @@ import java.awt.event.ActionListener;
 
 public class FractalMenu extends JPanel {
 
-    final static int WIDTH = 1000;
-    final static int HEIGHT = 1080;
+    final static int WIDTH = 800;
+    final static int HEIGHT = 600;
 
     public FractalMenu(FractalFrame frame){
         this.setPreferredSize(new Dimension(WIDTH,HEIGHT));
@@ -110,5 +110,19 @@ public class FractalMenu extends JPanel {
             }
         });
         this.add(benice);
+
+        //burning ship
+        JButton ship = new JButton("Burning ship");
+        ship.setBounds(300,
+                500,
+                (int) ship.getPreferredSize().getWidth(),
+                (int) ship.getPreferredSize().getHeight());
+        ship.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                frame.change("ship");
+            }
+        });
+        this.add(ship);
     }
 }

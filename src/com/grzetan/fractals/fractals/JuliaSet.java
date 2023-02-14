@@ -24,9 +24,10 @@ public class JuliaSet extends JPanel{
     double xmax = 2;
     double ymin = -2;
     double ymax = 2;
-    int maxIterations = 90;
-    double[] c = {randomNumber(-0.5,0.5),randomNumber(-0.5,0.5)};
+    int maxIterations = 60;
+//    double[] c = {randomNumber(-0.5,0.5),randomNumber(-0.5,0.5)};
 
+    double[] c = {-0.800043099666580, 0.164138006668392};
     double epsilon = 0.005;
     boolean firstFrame = true;
 
@@ -106,11 +107,8 @@ public class JuliaSet extends JPanel{
                 if(i == maxIterations){
                     Color c = new Color(0,0,0);
                     img.setRGB(x,y,c.getRGB());
-                }else if(i > 1){
-                    Color c = new Color((int) (i/maxIterations*255), (int) (i/maxIterations*255) ,(int) (i/maxIterations*255));
-                    img.setRGB(x,y,c.getRGB());
                 }else{
-                    Color c = new Color(50,50,50);
+                    Color c = new Color(255, 255, 255, (int) (i/maxIterations*255));
                     img.setRGB(x,y,c.getRGB());
                 }
             }
